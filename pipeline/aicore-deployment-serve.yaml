@@ -1,0 +1,34 @@
+apiVersion: aicore.sap.com/v1alpha1
+kind: Deployment
+metadata:
+  name: cpi-simple-service
+spec:
+  scenario: cpi-simple-classifier
+  executable: cpi-simple-trainer
+  dockerImage: <your-registry>/<repo>:cpi-simple-serve
+  # If you want to mount the trained model as an AI Core artifact:
+  inputArtifacts:
+    - name: model_artifact
+      kind: model
+      path: /app/model
+  ports:
+    - name: http
+      port: 8080
+  readinessProbe:
+    path: /health
+    port: 8080
+  env:
+    # Optional: if you prefer loading model directly from S3 instead of artifact
+    # - name: S3_MODEL_URI
+    #   value: s3://your-bucket/models/cpi-simple/model.pkl
+    # - name: AWS_ACCESS_KEY_ID
+    #   valueFrom: ...
+    # - name: AWS_SECRET_ACCESS_KEY
+    #   valueFrom: ...
+    - name: AWS_DEFAULT_REGION
+      value: us-east-1
+    - name: MODEL_PATH
+      value: /app/model/model.pkl
+    - name: VEC_PATH
+      value: /app/model/vectorizer.pkl
+  command: ["uvicorn", "serve_cpi_btpcore:app", "--host", "0.0.0.0", "--port", "8080"]
