@@ -1,0 +1,37 @@
+apiVersion: aicore.sap.com/v1alpha1
+kind: Executable
+metadata:
+  name: cpi-simple-trainer
+spec:
+  scenario: cpi-simple-classifier
+  description: "Train CPI simple classifier (reads data from S3, writes model to S3 and/or output artifact)."
+  dockerImage: <your-registry>/<repo>:cpi-simple-train
+  inputArtifacts:
+    # Optional: if you also want to pass a dataset as artifact (instead of S3), mount here:
+    # - name: training_data
+    #   kind: dataset
+    #   path: /app/data/cpi_logs.csv
+  outputArtifacts:
+    - name: model_artifact
+      kind: model
+      path: /app/model
+  parameters:
+    - name: TARGET_COLUMN
+      value: CUSTOM_STATUS
+    - name: DATA_PATH
+      value: /app/data/cpi_logs.csv           # used if S3_DATA_URI not provided
+    # S3 URIs (set them via Launchpad during run or here as defaults)
+    # - name: S3_DATA_URI
+    #   value: s3://your-bucket/path/cpi_logs.csv
+    # - name: S3_MODEL_URI
+    #   value: s3://your-bucket/models/cpi-simple/model.pkl
+  env:
+    # Let AI Core inject these via Launchpad secrets/variables
+    # For AWS S3:
+    # - name: AWS_ACCESS_KEY_ID
+    #   valueFrom: ...
+    # - name: AWS_SECRET_ACCESS_KEY
+    #   valueFrom: ...
+    - name: AWS_DEFAULT_REGION
+      value: us-east-1
+  command: ["python", "train_cpi_btpcore.py"]
