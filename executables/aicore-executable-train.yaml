@@ -1,0 +1,21 @@
+apiVersion: aicore.sap.com/v1alpha1
+kind: Executable
+metadata:
+  name: cpi-triage-ai-trainer
+spec:
+  scenario: cpi-triage-ai
+  description: Train CPI simple classifier (reads data from S3 or artifact, writes model to artifact and/or S3)
+  dockerImage: <your-registry>/<repo>:cpi-triage-ai-train
+  outputArtifacts:
+    - name: model_artifact
+      kind: model
+      path: /app/model
+  parameters:
+    - name: TARGET_COLUMN
+      value: CUSTOM_STATUS
+    - name: DATA_PATH
+      value: /app/data/cpi_logs.csv
+  env:
+    - name: AWS_DEFAULT_REGION
+      value: us-east-1
+  command: ["python", "train_cpi_btpcore.py"]
